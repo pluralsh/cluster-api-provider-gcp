@@ -111,8 +111,6 @@ spec:
                 - stable
                 type: string
             required:
-            - enableAutopilot
-            - enableWorkloadIdentity
             - location
             - project
             type: object
