@@ -57,6 +57,7 @@ type GCPManagedControlPlaneSpec struct {
 	// EnableAutopilot is disabled. It allows workloads in your GKE clusters to impersonate
 	// Identity and Access Management (IAM) service accounts to access Google Cloud services.
 	// Ref: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
+	// +optional
 	EnableWorkloadIdentity bool `json:"enableWorkloadIdentity"`
 }
 
