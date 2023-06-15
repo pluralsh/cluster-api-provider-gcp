@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"sigs.k8s.io/cluster-api-provider-gcp/api/v1beta1"
 	"sigs.k8s.io/cluster-api-provider-gcp/cloud/scope"
 	"sigs.k8s.io/cluster-api-provider-gcp/cloud/services/shared"
 
@@ -338,8 +339,25 @@ func (s *Service) createNetworkConfig() *containerpb.NetworkConfig {
 	}
 
 	return &containerpb.NetworkConfig{
-		DatapathProvider: containerpb.DatapathProvider(*s.scope.GCPManagedCluster.Spec.Network.DatapathProvider),
+		DatapathProvider: convertToSdkDatapathProvider(s.scope.GCPManagedCluster.Spec.Network.DatapathProvider),
 	}
+}
+
+func convertToSdkDatapathProvider(datapath *v1beta1.DatapathProvider) containerpb.DatapathProvider {
+	if datapath == nil {
+		return containerpb.DatapathProvider_DATAPATH_PROVIDER_UNSPECIFIED
+	}
+
+	switch *datapath {
+	case v1beta1.DatapathProvider_UNSPECIFIED:
+		return containerpb.DatapathProvider_DATAPATH_PROVIDER_UNSPECIFIED
+	case v1beta1.DatapathProvider_LEGACY_DATAPATH:
+		return containerpb.DatapathProvider_LEGACY_DATAPATH
+	case v1beta1.DatapathProvider_ADVANCED_DATAPATH:
+		return containerpb.DatapathProvider_ADVANCED_DATAPATH
+	}
+
+	return containerpb.DatapathProvider_DATAPATH_PROVIDER_UNSPECIFIED
 }
 
 func (s *Service) createWorkloadIdentityConfig() *containerpb.WorkloadIdentityConfig {
