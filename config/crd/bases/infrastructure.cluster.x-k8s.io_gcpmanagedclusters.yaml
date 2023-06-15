@@ -64,6 +64,20 @@ spec:
                   GCP resources managed by the GCP provider, in addition to the ones
                   added by default.
                 type: object
+              addonsConfig:
+                description: AddonsConfig is a configuration for the various addons
+                  available to run in the cluster.
+                properties:
+                  gcpFilestoreCsiDriverEnabled:
+                    description: GcpFilestoreCsiDriverEnabled track whether the GCP
+                      Filestore CSI driver is enabled for this cluster.
+                    type: boolean
+                  networkPolicyEnabled:
+                    description: NetworkPolicyEnabled tracks whether the addon is
+                      enabled or not on the Master, it does not track whether network
+                      policy is enabled for the nodes.
+                    type: boolean
+                type: object
               controlPlaneEndpoint:
                 description: ControlPlaneEndpoint represents the endpoint used to
                   communicate with the control plane.
@@ -106,6 +120,11 @@ spec:
                       predetermined range as described in Auto mode VPC network IP
                       ranges. \n Defaults to true."
                     type: boolean
+                  datapathProvider:
+                    description: The desired datapath provider for this cluster. By
+                      default, uses the IPTables-based kube-proxy implementation (DatapathProvider_LEGACY_DATAPATH).
+                    format: int32
+                    type: integer
                   loadBalancerBackendPort:
                     description: Allow for configuration of load balancer backend
                       (useful for changing apiserver port)

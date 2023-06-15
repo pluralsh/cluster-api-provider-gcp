@@ -555,6 +555,11 @@ spec:
                       predetermined range as described in Auto mode VPC network IP
                       ranges. \n Defaults to true."
                     type: boolean
+                  datapathProvider:
+                    description: The desired datapath provider for this cluster. By
+                      default, uses the IPTables-based kube-proxy implementation (DatapathProvider_LEGACY_DATAPATH).
+                    format: int32
+                    type: integer
                   loadBalancerBackendPort:
                     description: Allow for configuration of load balancer backend
                       (useful for changing apiserver port)
