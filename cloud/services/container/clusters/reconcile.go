@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"sigs.k8s.io/cluster-api-provider-gcp/api/v1beta1"
 	"sigs.k8s.io/cluster-api-provider-gcp/cloud/scope"
 	"sigs.k8s.io/cluster-api-provider-gcp/cloud/services/shared"
 
@@ -260,10 +261,14 @@ func (s *Service) createCluster(ctx context.Context, log *logr.Logger) error {
 			Channel: convertToSdkReleaseChannel(s.scope.GCPManagedControlPlane.Spec.ReleaseChannel),
 		},
 		WorkloadIdentityConfig: s.createWorkloadIdentityConfig(),
+		NetworkConfig:          s.createNetworkConfig(),
+		AddonsConfig:           s.createAddonsConfig(),
 	}
+
 	if s.scope.GCPManagedControlPlane.Spec.ControlPlaneVersion != nil {
 		cluster.InitialClusterVersion = *s.scope.GCPManagedControlPlane.Spec.ControlPlaneVersion
 	}
+
 	if !s.scope.IsAutopilotCluster() {
 		cluster.NodePools = scope.ConvertToSdkNodePools(nodePools, machinePools, isRegional)
 	}
@@ -304,6 +309,55 @@ func (s *Service) deleteCluster(ctx context.Context, log *logr.Logger) error {
 	}
 
 	return nil
+}
+
+func (s *Service) createAddonsConfig() *containerpb.AddonsConfig {
+	if s.scope.GCPManagedCluster.Spec.AddonsConfig == nil {
+		return nil
+	}
+
+	config := new(containerpb.AddonsConfig)
+
+	if s.scope.GCPManagedCluster.Spec.AddonsConfig.GcpFilestoreCsiDriverEnabled != nil {
+		config.GcpFilestoreCsiDriverConfig = &containerpb.GcpFilestoreCsiDriverConfig{
+			Enabled: *s.scope.GCPManagedCluster.Spec.AddonsConfig.GcpFilestoreCsiDriverEnabled,
+		}
+	}
+
+	if s.scope.GCPManagedCluster.Spec.AddonsConfig.NetworkPolicyEnabled != nil {
+		config.NetworkPolicyConfig = &containerpb.NetworkPolicyConfig{
+			Disabled: *s.scope.GCPManagedCluster.Spec.AddonsConfig.NetworkPolicyEnabled,
+		}
+	}
+
+	return config
+}
+
+func (s *Service) createNetworkConfig() *containerpb.NetworkConfig {
+	if s.scope.GCPManagedCluster.Spec.Network.DatapathProvider == nil {
+		return nil
+	}
+
+	return &containerpb.NetworkConfig{
+		DatapathProvider: convertToSdkDatapathProvider(s.scope.GCPManagedCluster.Spec.Network.DatapathProvider),
+	}
+}
+
+func convertToSdkDatapathProvider(datapath *v1beta1.DatapathProvider) containerpb.DatapathProvider {
+	if datapath == nil {
+		return containerpb.DatapathProvider_DATAPATH_PROVIDER_UNSPECIFIED
+	}
+
+	switch *datapath {
+	case v1beta1.DatapathProvider_UNSPECIFIED:
+		return containerpb.DatapathProvider_DATAPATH_PROVIDER_UNSPECIFIED
+	case v1beta1.DatapathProvider_LEGACY_DATAPATH:
+		return containerpb.DatapathProvider_LEGACY_DATAPATH
+	case v1beta1.DatapathProvider_ADVANCED_DATAPATH:
+		return containerpb.DatapathProvider_ADVANCED_DATAPATH
+	}
+
+	return containerpb.DatapathProvider_DATAPATH_PROVIDER_UNSPECIFIED
 }
 
 func (s *Service) createWorkloadIdentityConfig() *containerpb.WorkloadIdentityConfig {

@@ -51,6 +51,17 @@ spec:
                   GCP resources managed by the GCP provider, in addition to the ones
                   added by default.
                 type: object
+              diskSizeGb:
+                description: "Size of the disk attached to each node, specified in
+                  GB. The smallest allowed disk size is 10GB. \n If unspecified, the
+                  default disk size is 100GB."
+                format: int32
+                type: integer
+              diskType:
+                description: "Type of the disk attached to each node (e.g. 'pd-standard',
+                  'pd-ssd' or 'pd-balanced') \n If unspecified, the default disk type
+                  is 'pd-standard'"
+                type: string
               kubernetesLabels:
                 additionalProperties:
                   type: string
@@ -82,6 +93,10 @@ spec:
                   - value
                   type: object
                 type: array
+              machineType:
+                description: "The name of a Google Compute Engine [machine type](https://cloud.google.com/compute/docs/machine-types)
+                  \n If unspecified, the default machine type is `e2-medium`."
+                type: string
               nodePoolName:
                 description: NodePoolName specifies the name of the GKE node pool
                   corresponding to this MachinePool. If you don't specify a name then

@@ -18,8 +18,9 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	infrav1 "sigs.k8s.io/cluster-api-provider-gcp/api/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+
+	infrav1 "sigs.k8s.io/cluster-api-provider-gcp/api/v1beta1"
 )
 
 const (
@@ -52,6 +53,21 @@ type GCPManagedMachinePoolSpec struct {
 	// machine pool
 	// +optional
 	ProviderIDList []string `json:"providerIDList,omitempty"`
+	// The name of a Google Compute Engine [machine
+	// type](https://cloud.google.com/compute/docs/machine-types)
+	//
+	// If unspecified, the default machine type is `e2-medium`.
+	MachineType string `json:"machineType,omitempty"`
+	// Size of the disk attached to each node, specified in GB.
+	// The smallest allowed disk size is 10GB.
+	//
+	// If unspecified, the default disk size is 100GB.
+	DiskSizeGb int32 `json:"diskSizeGb,omitempty"`
+	// Type of the disk attached to each node (e.g. 'pd-standard', 'pd-ssd' or
+	// 'pd-balanced')
+	//
+	// If unspecified, the default disk type is 'pd-standard'
+	DiskType string `json:"diskType,omitempty"`
 }
 
 // GCPManagedMachinePoolStatus defines the observed state of GCPManagedMachinePool.
