@@ -87,6 +87,21 @@ type Network struct {
 	APIServerForwardingRule *string `json:"apiServerForwardingRule,omitempty"`
 }
 
+// DatapathProvider is the datapath provider selects the implementation of the Kubernetes networking
+// model for service resolution and network policy enforcement.
+type DatapathProvider int32
+
+const (
+	// DatapathProvider_DATAPATH_PROVIDER_UNSPECIFIED is the default value.
+	DatapathProvider_DATAPATH_PROVIDER_UNSPECIFIED DatapathProvider = 0
+	// DatapathProvider_LEGACY_DATAPATH uses the IPTables implementation based on kube-proxy.
+	DatapathProvider_LEGACY_DATAPATH DatapathProvider = 1
+	// DatapathProvider_ADVANCED_DATAPATH uses the eBPF based GKE Dataplane V2 with additional features.
+	// See the [GKE Dataplane V2 documentation](https://cloud.google.com/kubernetes-engine/docs/how-to/dataplane-v2)
+	// for more.
+	DatapathProvider_ADVANCED_DATAPATH DatapathProvider = 2
+)
+
 // NetworkSpec encapsulates all things related to a GCP network.
 type NetworkSpec struct {
 	// Name is the name of the network to be used.
@@ -112,6 +127,10 @@ type NetworkSpec struct {
 	// Allow for configuration of load balancer backend (useful for changing apiserver port)
 	// +optional
 	LoadBalancerBackendPort *int32 `json:"loadBalancerBackendPort,omitempty"`
+
+	// The desired datapath provider for this cluster. By default, uses the
+	// IPTables-based kube-proxy implementation (DatapathProvider_LEGACY_DATAPATH).
+	DatapathProvider *DatapathProvider `json:"datapathProvider,omitempty"`
 }
 
 // SubnetSpec configures an GCP Subnet.
@@ -266,4 +285,14 @@ type ObjectReference struct {
 	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
 	// +kubebuilder:validation:Required
 	Name string `json:"name"`
+}
+
+// AddonsConfig is a configuration for the addons that can be automatically spun up in the
+// cluster, enabling additional functionality.
+type AddonsConfig struct {
+	// NetworkPolicyEnabled tracks whether the addon is enabled or not on the Master,
+	// it does not track whether network policy is enabled for the nodes.
+	NetworkPolicyEnabled *bool `json:"networkPolicyEnabled,omitempty"`
+	// GcpFilestoreCsiDriverEnabled track whether the GCP Filestore CSI driver is enabled for this cluster.
+	GcpFilestoreCsiDriverEnabled *bool `json:"gcpFilestoreCsiDriverEnabled,omitempty"`
 }

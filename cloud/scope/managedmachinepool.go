@@ -29,11 +29,12 @@ import (
 	container "cloud.google.com/go/container/apiv1"
 	"cloud.google.com/go/container/apiv1/containerpb"
 	"github.com/pkg/errors"
-	infrav1exp "sigs.k8s.io/cluster-api-provider-gcp/exp/api/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	clusterv1exp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/cluster-api/util/patch"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	infrav1exp "sigs.k8s.io/cluster-api-provider-gcp/exp/api/v1beta1"
 )
 
 // ManagedMachinePoolScopeParams defines the input parameters used to create a new Scope.
@@ -167,9 +168,12 @@ func ConvertToSdkNodePool(nodePool infrav1exp.GCPManagedMachinePool, machinePool
 		Name:             nodePoolName,
 		InitialNodeCount: replicas,
 		Config: &containerpb.NodeConfig{
-			Labels:   nodePool.Spec.KubernetesLabels,
-			Taints:   infrav1exp.ConvertToSdkTaint(nodePool.Spec.KubernetesTaints),
-			Metadata: nodePool.Spec.AdditionalLabels,
+			MachineType: nodePool.Spec.MachineType,
+			DiskSizeGb:  nodePool.Spec.DiskSizeGb,
+			DiskType:    nodePool.Spec.DiskType,
+			Labels:      nodePool.Spec.KubernetesLabels,
+			Taints:      infrav1exp.ConvertToSdkTaint(nodePool.Spec.KubernetesTaints),
+			Metadata:    nodePool.Spec.AdditionalLabels,
 		},
 	}
 	if nodePool.Spec.Scaling != nil {
