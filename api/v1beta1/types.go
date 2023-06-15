@@ -130,6 +130,7 @@ type NetworkSpec struct {
 
 	// The desired datapath provider for this cluster. By default, uses the
 	// IPTables-based kube-proxy implementation (DatapathProvider_LEGACY_DATAPATH).
+	// +optional
 	DatapathProvider *DatapathProvider `json:"datapathProvider,omitempty"`
 }
 
@@ -292,7 +293,9 @@ type ObjectReference struct {
 type AddonsConfig struct {
 	// NetworkPolicyEnabled tracks whether the addon is enabled or not on the Master,
 	// it does not track whether network policy is enabled for the nodes.
+	// +optional
 	NetworkPolicyEnabled *bool `json:"networkPolicyEnabled,omitempty"`
 	// GcpFilestoreCsiDriverEnabled track whether the GCP Filestore CSI driver is enabled for this cluster.
+	// +optional
 	GcpFilestoreCsiDriverEnabled *bool `json:"gcpFilestoreCsiDriverEnabled,omitempty"`
 }

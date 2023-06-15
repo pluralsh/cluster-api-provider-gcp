@@ -56,6 +56,7 @@ type GCPManagedClusterSpec struct {
 	CredentialsRef *infrav1.ObjectReference `json:"credentialsRef,omitempty"`
 
 	// AddonsConfig is a configuration for the various addons available to run in the cluster.
+	// +optional
 	AddonsConfig *infrav1.AddonsConfig `json:"addonsConfig,omitempty"`
 }
 
