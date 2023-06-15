@@ -89,17 +89,17 @@ type Network struct {
 
 // DatapathProvider is the datapath provider selects the implementation of the Kubernetes networking
 // model for service resolution and network policy enforcement.
-type DatapathProvider int32
+type DatapathProvider string
 
 const (
-	// DatapathProvider_DATAPATH_PROVIDER_UNSPECIFIED is the default value.
-	DatapathProvider_DATAPATH_PROVIDER_UNSPECIFIED DatapathProvider = 0
+	// DatapathProvider_UNSPECIFIED is the default value.
+	DatapathProvider_UNSPECIFIED DatapathProvider = DatapathProvider("UNSPECIFIED")
 	// DatapathProvider_LEGACY_DATAPATH uses the IPTables implementation based on kube-proxy.
-	DatapathProvider_LEGACY_DATAPATH DatapathProvider = 1
+	DatapathProvider_LEGACY_DATAPATH DatapathProvider = DatapathProvider("LEGACY_DATAPATH")
 	// DatapathProvider_ADVANCED_DATAPATH uses the eBPF based GKE Dataplane V2 with additional features.
 	// See the [GKE Dataplane V2 documentation](https://cloud.google.com/kubernetes-engine/docs/how-to/dataplane-v2)
 	// for more.
-	DatapathProvider_ADVANCED_DATAPATH DatapathProvider = 2
+	DatapathProvider_ADVANCED_DATAPATH DatapathProvider = DatapathProvider("ADVANCED_DATAPATH")
 )
 
 // NetworkSpec encapsulates all things related to a GCP network.
