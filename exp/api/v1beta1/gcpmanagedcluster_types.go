@@ -18,8 +18,9 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	infrav1 "sigs.k8s.io/cluster-api-provider-gcp/api/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+
+	infrav1 "sigs.k8s.io/cluster-api-provider-gcp/api/v1beta1"
 )
 
 const (
@@ -53,6 +54,9 @@ type GCPManagedClusterSpec struct {
 	// supplied then the credentials of the controller will be used.
 	// +optional
 	CredentialsRef *infrav1.ObjectReference `json:"credentialsRef,omitempty"`
+
+	// AddonsConfig is a configuration for the various addons available to run in the cluster.
+	AddonsConfig *infrav1.AddonsConfig `json:"addonsConfig,omitempty"`
 }
 
 // GCPManagedClusterStatus defines the observed state of GCPManagedCluster.
