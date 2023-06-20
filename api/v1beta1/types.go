@@ -291,6 +291,14 @@ type ObjectReference struct {
 // AddonsConfig is a configuration for the addons that can be automatically spun up in the
 // cluster, enabling additional functionality.
 type AddonsConfig struct {
+	// HttpLoadBalancingEnabled tracks whether the HTTP Load Balancing controller is enabled in the cluster.
+	// When enabled, it runs a small pod in the cluster that manages the load balancers.
+	// +optional
+	HttpLoadBalancingEnabled *bool `json:"httpLoadBalancingEnabled,omitempty"`
+	// HorizontalPodAutoscalingEnabled tracks whether the Horizontal Pod Autoscaling feature is enabled in the cluster.
+	// When enabled, it ensures that metrics are collected into Stackdriver Monitoring.
+	// +optional
+	HorizontalPodAutoscalingEnabled *bool `json:"horizontalPodAutoscalingEnabled,omitempty"`
 	// NetworkPolicyEnabled tracks whether the addon is enabled or not on the Master,
 	// it does not track whether network policy is enabled for the nodes.
 	// +optional

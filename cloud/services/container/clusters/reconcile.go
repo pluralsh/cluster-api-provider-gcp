@@ -326,7 +326,19 @@ func (s *Service) createAddonsConfig() *containerpb.AddonsConfig {
 
 	if s.scope.GCPManagedCluster.Spec.AddonsConfig.NetworkPolicyEnabled != nil {
 		config.NetworkPolicyConfig = &containerpb.NetworkPolicyConfig{
-			Disabled: *s.scope.GCPManagedCluster.Spec.AddonsConfig.NetworkPolicyEnabled,
+			Disabled: !*s.scope.GCPManagedCluster.Spec.AddonsConfig.NetworkPolicyEnabled,
+		}
+	}
+
+	if s.scope.GCPManagedCluster.Spec.AddonsConfig.HorizontalPodAutoscalingEnabled != nil {
+		config.HorizontalPodAutoscaling = &containerpb.HorizontalPodAutoscaling{
+			Disabled: !*s.scope.GCPManagedCluster.Spec.AddonsConfig.HorizontalPodAutoscalingEnabled,
+		}
+	}
+
+	if s.scope.GCPManagedCluster.Spec.AddonsConfig.HttpLoadBalancingEnabled != nil {
+		config.HttpLoadBalancing = &containerpb.HttpLoadBalancing{
+			Disabled: !*s.scope.GCPManagedCluster.Spec.AddonsConfig.HttpLoadBalancingEnabled,
 		}
 	}
 
