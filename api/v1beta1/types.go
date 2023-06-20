@@ -92,14 +92,14 @@ type Network struct {
 type DatapathProvider string
 
 const (
-	// DatapathProvider_UNSPECIFIED is the default value.
-	DatapathProvider_UNSPECIFIED DatapathProvider = DatapathProvider("UNSPECIFIED")
-	// DatapathProvider_LEGACY_DATAPATH uses the IPTables implementation based on kube-proxy.
-	DatapathProvider_LEGACY_DATAPATH DatapathProvider = DatapathProvider("LEGACY_DATAPATH")
-	// DatapathProvider_ADVANCED_DATAPATH uses the eBPF based GKE Dataplane V2 with additional features.
+	// DatapathProviderUnspecified is the default value.
+	DatapathProviderUnspecified DatapathProvider = DatapathProvider("UNSPECIFIED")
+	// DatapathProviderLegacyDatapath uses the IPTables implementation based on kube-proxy.
+	DatapathProviderLegacyDatapath DatapathProvider = DatapathProvider("LEGACY_DATAPATH")
+	// DatapathProviderAdvancedDatapath uses the eBPF based GKE Dataplane V2 with additional features.
 	// See the [GKE Dataplane V2 documentation](https://cloud.google.com/kubernetes-engine/docs/how-to/dataplane-v2)
 	// for more.
-	DatapathProvider_ADVANCED_DATAPATH DatapathProvider = DatapathProvider("ADVANCED_DATAPATH")
+	DatapathProviderAdvancedDatapath DatapathProvider = DatapathProvider("ADVANCED_DATAPATH")
 )
 
 // NetworkSpec encapsulates all things related to a GCP network.
@@ -129,7 +129,7 @@ type NetworkSpec struct {
 	LoadBalancerBackendPort *int32 `json:"loadBalancerBackendPort,omitempty"`
 
 	// The desired datapath provider for this cluster. By default, uses the
-	// IPTables-based kube-proxy implementation (DatapathProvider_LEGACY_DATAPATH).
+	// IPTables-based kube-proxy implementation (DatapathProviderLegacyDatapath).
 	// +optional
 	DatapathProvider *DatapathProvider `json:"datapathProvider,omitempty"`
 }
@@ -294,7 +294,7 @@ type AddonsConfig struct {
 	// HttpLoadBalancingEnabled tracks whether the HTTP Load Balancing controller is enabled in the cluster.
 	// When enabled, it runs a small pod in the cluster that manages the load balancers.
 	// +optional
-	HttpLoadBalancingEnabled *bool `json:"httpLoadBalancingEnabled,omitempty"`
+	HTTPLoadBalancingEnabled *bool `json:"httpLoadBalancingEnabled,omitempty"`
 	// HorizontalPodAutoscalingEnabled tracks whether the Horizontal Pod Autoscaling feature is enabled in the cluster.
 	// When enabled, it ensures that metrics are collected into Stackdriver Monitoring.
 	// +optional
