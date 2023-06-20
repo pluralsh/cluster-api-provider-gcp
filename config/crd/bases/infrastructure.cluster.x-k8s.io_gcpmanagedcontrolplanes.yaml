@@ -111,7 +111,6 @@ spec:
                 - stable
                 type: string
             required:
-            - enableWorkloadIdentity
             - location
             - project
             type: object

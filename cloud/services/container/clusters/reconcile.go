@@ -326,7 +326,19 @@ func (s *Service) createAddonsConfig() *containerpb.AddonsConfig {
 
 	if s.scope.GCPManagedCluster.Spec.AddonsConfig.NetworkPolicyEnabled != nil {
 		config.NetworkPolicyConfig = &containerpb.NetworkPolicyConfig{
-			Disabled: *s.scope.GCPManagedCluster.Spec.AddonsConfig.NetworkPolicyEnabled,
+			Disabled: !*s.scope.GCPManagedCluster.Spec.AddonsConfig.NetworkPolicyEnabled,
+		}
+	}
+
+	if s.scope.GCPManagedCluster.Spec.AddonsConfig.HorizontalPodAutoscalingEnabled != nil {
+		config.HorizontalPodAutoscaling = &containerpb.HorizontalPodAutoscaling{
+			Disabled: !*s.scope.GCPManagedCluster.Spec.AddonsConfig.HorizontalPodAutoscalingEnabled,
+		}
+	}
+
+	if s.scope.GCPManagedCluster.Spec.AddonsConfig.HTTPLoadBalancingEnabled != nil {
+		config.HttpLoadBalancing = &containerpb.HttpLoadBalancing{
+			Disabled: !*s.scope.GCPManagedCluster.Spec.AddonsConfig.HTTPLoadBalancingEnabled,
 		}
 	}
 
@@ -349,11 +361,11 @@ func convertToSdkDatapathProvider(datapath *v1beta1.DatapathProvider) containerp
 	}
 
 	switch *datapath {
-	case v1beta1.DatapathProvider_UNSPECIFIED:
+	case v1beta1.DatapathProviderUnspecified:
 		return containerpb.DatapathProvider_DATAPATH_PROVIDER_UNSPECIFIED
-	case v1beta1.DatapathProvider_LEGACY_DATAPATH:
+	case v1beta1.DatapathProviderLegacyDatapath:
 		return containerpb.DatapathProvider_LEGACY_DATAPATH
-	case v1beta1.DatapathProvider_ADVANCED_DATAPATH:
+	case v1beta1.DatapathProviderAdvancedDatapath:
 		return containerpb.DatapathProvider_ADVANCED_DATAPATH
 	}
 

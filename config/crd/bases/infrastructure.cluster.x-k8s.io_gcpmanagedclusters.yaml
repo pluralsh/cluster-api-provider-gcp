@@ -72,6 +72,17 @@ spec:
                     description: GcpFilestoreCsiDriverEnabled track whether the GCP
                       Filestore CSI driver is enabled for this cluster.
                     type: boolean
+                  horizontalPodAutoscalingEnabled:
+                    description: HorizontalPodAutoscalingEnabled tracks whether the
+                      Horizontal Pod Autoscaling feature is enabled in the cluster.
+                      When enabled, it ensures that metrics are collected into Stackdriver
+                      Monitoring.
+                    type: boolean
+                  httpLoadBalancingEnabled:
+                    description: HttpLoadBalancingEnabled tracks whether the HTTP
+                      Load Balancing controller is enabled in the cluster. When enabled,
+                      it runs a small pod in the cluster that manages the load balancers.
+                    type: boolean
                   networkPolicyEnabled:
                     description: NetworkPolicyEnabled tracks whether the addon is
                       enabled or not on the Master, it does not track whether network
@@ -122,7 +133,7 @@ spec:
                     type: boolean
                   datapathProvider:
                     description: The desired datapath provider for this cluster. By
-                      default, uses the IPTables-based kube-proxy implementation (DatapathProvider_LEGACY_DATAPATH).
+                      default, uses the IPTables-based kube-proxy implementation (DatapathProviderLegacyDatapath).
                     type: string
                   loadBalancerBackendPort:
                     description: Allow for configuration of load balancer backend
