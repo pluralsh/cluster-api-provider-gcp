@@ -336,9 +336,9 @@ func (s *Service) createAddonsConfig() *containerpb.AddonsConfig {
 		}
 	}
 
-	if s.scope.GCPManagedCluster.Spec.AddonsConfig.HttpLoadBalancingEnabled != nil {
+	if s.scope.GCPManagedCluster.Spec.AddonsConfig.HTTPLoadBalancingEnabled != nil {
 		config.HttpLoadBalancing = &containerpb.HttpLoadBalancing{
-			Disabled: !*s.scope.GCPManagedCluster.Spec.AddonsConfig.HttpLoadBalancingEnabled,
+			Disabled: !*s.scope.GCPManagedCluster.Spec.AddonsConfig.HTTPLoadBalancingEnabled,
 		}
 	}
 
