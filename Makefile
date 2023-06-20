@@ -117,7 +117,7 @@ STAGING_REGISTRY := $(REGISTRY)
 PROD_REGISTRY := $(REGISTRY)
 IMAGE_NAME ?= cluster-api-gcp-controller
 export CONTROLLER_IMG ?= $(REGISTRY)/$(IMAGE_NAME)
-export TAG ?= dev
+export TAG ?= $(shell git describe --abbrev=0 2>/dev/null)
 export ARCH ?= amd64
 ALL_ARCH = amd64 arm arm64 ppc64le s390x
 
