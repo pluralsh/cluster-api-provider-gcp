@@ -117,7 +117,7 @@ STAGING_REGISTRY := $(REGISTRY)
 PROD_REGISTRY := $(REGISTRY)
 IMAGE_NAME ?= cluster-api-gcp-controller
 export CONTROLLER_IMG ?= $(REGISTRY)/$(IMAGE_NAME)
-export TAG ?= $(shell git describe --abbrev=0 2>/dev/null)
+export TAG ?= $(shell git describe --tags 2>/dev/null)
 export ARCH ?= amd64
 ALL_ARCH = amd64 arm arm64 ppc64le s390x
 
@@ -411,7 +411,7 @@ set-manifest-pull-policy:
 ## Release
 ## --------------------------------------
 
-RELEASE_TAG := $(shell git describe --abbrev=0 2>/dev/null)
+RELEASE_TAG := $(shell git describe --tags 2>/dev/null)
 RELEASE_DIR := out
 
 $(RELEASE_DIR):
