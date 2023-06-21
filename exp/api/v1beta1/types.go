@@ -79,7 +79,7 @@ func ConvertToSdkTaint(taints Taints) []*containerpb.NodeTaint {
 // - "1.X": picks the highest valid patch+gke.N patch in the 1.X version
 // - "1.X.Y": picks the highest valid gke.N patch in the 1.X.Y version
 // - "1.X.Y-gke.N": picks an explicit Kubernetes version
-// - "-": picks the Kubernetes master version
+// - "-": picks the Kubernetes master version.
 func NormalizeMachineVersion(version *string) *string {
 	if version == nil {
 		return nil
