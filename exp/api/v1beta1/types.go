@@ -53,7 +53,7 @@ func ConvertToSdkTaint(taints Taints) []*containerpb.NodeTaint {
 	if taints == nil {
 		return nil
 	}
-	res := []*containerpb.NodeTaint{}
+	res := make([]*containerpb.NodeTaint, 0)
 	for _, taint := range taints {
 		res = append(res, &containerpb.NodeTaint{
 			Key:    taint.Key,

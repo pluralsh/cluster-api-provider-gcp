@@ -164,9 +164,12 @@ func ConvertToSdkNodePool(nodePool infrav1exp.GCPManagedMachinePool, machinePool
 	if len(nodePoolName) == 0 {
 		nodePoolName = nodePool.Name
 	}
+
 	sdkNodePool := containerpb.NodePool{
 		Name:             nodePoolName,
 		InitialNodeCount: replicas,
+		Autoscaling:      convertToSdkNodePoolAutoscaling(nodePool.Spec.Scaling),
+		Management:       convertToSdkNodeManagement(nodePool.Spec.Management),
 		Config: &containerpb.NodeConfig{
 			MachineType: nodePool.Spec.MachineType,
 			DiskSizeGb:  nodePool.Spec.DiskSizeGb,
@@ -174,28 +177,64 @@ func ConvertToSdkNodePool(nodePool infrav1exp.GCPManagedMachinePool, machinePool
 			Labels:      nodePool.Spec.KubernetesLabels,
 			Taints:      infrav1exp.ConvertToSdkTaint(nodePool.Spec.KubernetesTaints),
 			Metadata:    nodePool.Spec.AdditionalLabels,
+			ImageType:   nodePool.Spec.ImageType,
+			Preemptible: nodePool.Spec.Preemptible != nil && *nodePool.Spec.Preemptible,
+			Spot:        nodePool.Spec.Spot != nil && *nodePool.Spec.Spot,
 		},
 	}
-	if nodePool.Spec.Scaling != nil {
-		sdkNodePool.Autoscaling = &containerpb.NodePoolAutoscaling{
-			Enabled:      true,
-			MinNodeCount: *nodePool.Spec.Scaling.MinCount,
-			MaxNodeCount: *nodePool.Spec.Scaling.MaxCount,
-		}
-	}
+
 	if machinePool.Spec.Template.Spec.Version != nil {
 		sdkNodePool.Version = *machinePool.Spec.Template.Spec.Version
 	}
+
 	return &sdkNodePool
 }
 
 // ConvertToSdkNodePools converts node pools to format that is used by GCP SDK.
 func ConvertToSdkNodePools(nodePools []infrav1exp.GCPManagedMachinePool, machinePools []clusterv1exp.MachinePool, regional bool) []*containerpb.NodePool {
-	res := []*containerpb.NodePool{}
+	res := make([]*containerpb.NodePool, 0)
 	for i := range nodePools {
 		res = append(res, ConvertToSdkNodePool(nodePools[i], machinePools[i], regional))
 	}
 	return res
+}
+
+// convertToSdkNodePoolAutoscaling converts node pool autoscaling to format that is used by GCP SDK.
+func convertToSdkNodePoolAutoscaling(scaling *infrav1exp.NodePoolAutoScaling) *containerpb.NodePoolAutoscaling {
+	if scaling == nil {
+		return nil
+	}
+
+	result := &containerpb.NodePoolAutoscaling{Enabled: true}
+
+	if scaling.MinCount != nil {
+		result.MinNodeCount = *scaling.MinCount
+	}
+
+	if scaling.MaxCount != nil {
+		result.MaxNodeCount = *scaling.MaxCount
+	}
+
+	return result
+}
+
+// convertToSdkNodeManagement converts node management to format that is used by GCP SDK.
+func convertToSdkNodeManagement(management *infrav1exp.NodeManagement) *containerpb.NodeManagement {
+	if management == nil {
+		return nil
+	}
+
+	result := &containerpb.NodeManagement{}
+
+	if management.AutoUpgrade != nil {
+		result.AutoUpgrade = *management.AutoUpgrade
+	}
+
+	if management.AutoRepair != nil {
+		result.AutoRepair = *management.AutoRepair
+	}
+
+	return result
 }
 
 // SetReplicas sets the replicas count in status.
