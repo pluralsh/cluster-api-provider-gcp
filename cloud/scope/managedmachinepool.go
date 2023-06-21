@@ -151,7 +151,7 @@ func (s *ManagedMachinePoolScope) InstanceGroupManagersClient() *compute.Instanc
 
 // NodePoolVersion returns the k8s version of the node pool.
 func (s *ManagedMachinePoolScope) NodePoolVersion() *string {
-	return s.MachinePool.Spec.Template.Spec.Version
+	return infrav1exp.NormalizeMachineVersion(s.MachinePool.Spec.Template.Spec.Version)
 }
 
 // ConvertToSdkNodePool converts a node pool to format that is used by GCP SDK.
@@ -184,7 +184,7 @@ func ConvertToSdkNodePool(nodePool infrav1exp.GCPManagedMachinePool, machinePool
 	}
 
 	if machinePool.Spec.Template.Spec.Version != nil {
-		sdkNodePool.Version = *machinePool.Spec.Template.Spec.Version
+		sdkNodePool.Version = *infrav1exp.NormalizeMachineVersion(machinePool.Spec.Template.Spec.Version)
 	}
 
 	return &sdkNodePool
