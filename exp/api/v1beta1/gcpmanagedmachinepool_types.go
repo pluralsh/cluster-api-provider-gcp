@@ -38,6 +38,9 @@ type GCPManagedMachinePoolSpec struct {
 	// Scaling specifies scaling for the node pool
 	// +optional
 	Scaling *NodePoolAutoScaling `json:"scaling,omitempty"`
+	// Management configuration for this NodePool.
+	// +optional
+	Management *NodeManagement `json:"management,omitempty"`
 	// KubernetesLabels specifies the labels to apply to the nodes of the node pool.
 	// +optional
 	KubernetesLabels infrav1.Labels `json:"kubernetesLabels,omitempty"`
@@ -63,11 +66,21 @@ type GCPManagedMachinePoolSpec struct {
 	//
 	// If unspecified, the default disk size is 100GB.
 	DiskSizeGb int32 `json:"diskSizeGb,omitempty"`
-	// Type of the disk attached to each node (e.g. 'pd-standard', 'pd-ssd' or
-	// 'pd-balanced')
+	// Type of the disk attached to each node (e.g. 'pd-standard', 'pd-ssd' or 'pd-balanced')
 	//
 	// If unspecified, the default disk type is 'pd-standard'
 	DiskType string `json:"diskType,omitempty"`
+	// ImageType is the image type to use for this node. Note that for a given image type,
+	// the latest version of it will be used. Please see
+	// https://cloud.google.com/kubernetes-engine/docs/concepts/node-images for
+	// available image types.
+	ImageType string `json:"imageType,omitempty"`
+	// Whether the nodes are created as preemptible VM instances. See:
+	// https://cloud.google.com/compute/docs/instances/preemptible for more
+	// information about preemptible VM instances.
+	Preemptible *bool `json:"preemptible,omitempty"`
+	// Spot flag for enabling Spot VM, which is a rebrand of the existing preemptible flag.
+	Spot *bool `json:"spot,omitempty"`
 }
 
 // GCPManagedMachinePoolStatus defines the observed state of GCPManagedMachinePool.
@@ -106,8 +119,28 @@ type GCPManagedMachinePoolList struct {
 
 // NodePoolAutoScaling specifies scaling options.
 type NodePoolAutoScaling struct {
+	// MinCount is a minimum number of nodes for one location in the NodePool. Must be >= 1 and
+	// <= maxCount.
 	MinCount *int32 `json:"minCount,omitempty"`
+	// MaxCount is a maximum number of nodes for one location in the NodePool. Must be >=
+	// maxCount. There has to be enough quota to scale up the cluster.
 	MaxCount *int32 `json:"maxCount,omitempty"`
+}
+
+// NodeManagement defines the set of node management services turned on for the
+// node pool.
+type NodeManagement struct {
+	// AutoUpgrade is a flag that specifies whether node auto-upgrade is enabled for the node
+	// pool. If enabled, node auto-upgrade helps keep the nodes in your node pool
+	// up to date with the latest release version of Kubernetes.
+	// +optional
+	AutoUpgrade *bool `json:"autoUpgrade,omitempty"`
+	// AutoRepair is a flag that specifies whether the node auto-repair is enabled for the node
+	// pool. If enabled, the nodes in this node pool will be monitored and, if
+	// they fail health checks too many times, an automatic repair action will be
+	// triggered.
+	// +optional
+	AutoRepair *bool `json:"autoRepair,omitempty"`
 }
 
 // GetConditions returns the machine pool conditions.
