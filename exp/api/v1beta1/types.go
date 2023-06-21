@@ -16,7 +16,12 @@ limitations under the License.
 
 package v1beta1
 
-import "cloud.google.com/go/container/apiv1/containerpb"
+import (
+	"strings"
+
+	"cloud.google.com/go/container/apiv1/containerpb"
+	"k8s.io/utils/pointer"
+)
 
 // TaintEffect is the effect for a Kubernetes taint.
 type TaintEffect string
@@ -62,4 +67,23 @@ func ConvertToSdkTaint(taints Taints) []*containerpb.NodeTaint {
 		})
 	}
 	return res
+}
+
+// NormalizeMachineVersion removes "v" prefix from the machine/node pool version string.
+// It is being added automatically by one of the mutating webhooks installed
+// by the CAPI core.
+//
+// GKE expects version string to match below scheme:
+//
+// - "latest": picks the highest valid Kubernetes version
+// - "1.X": picks the highest valid patch+gke.N patch in the 1.X version
+// - "1.X.Y": picks the highest valid gke.N patch in the 1.X.Y version
+// - "1.X.Y-gke.N": picks an explicit Kubernetes version
+// - "-": picks the Kubernetes master version
+func NormalizeMachineVersion(version *string) *string {
+	if version == nil {
+		return nil
+	}
+
+	return pointer.String(strings.TrimPrefix(*version, "v"))
 }
