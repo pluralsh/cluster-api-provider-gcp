@@ -19,6 +19,7 @@ package shared
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
 	clusterv1exp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
@@ -47,6 +48,14 @@ func ManagedMachinePoolsPreflightCheck(managedPools []infrav1exp.GCPManagedMachi
 	if len(machinePools) != len(managedPools) {
 		return errors.New("each machinepool must have a matching gcpmanagedmachinepool")
 	}
+
+	sort.Slice(machinePools, func(i int, j int) bool {
+		return machinePools[i].Name < machinePools[j].Name
+	})
+
+	sort.Slice(managedPools, func(i int, j int) bool {
+		return managedPools[i].Name < managedPools[j].Name
+	})
 
 	for i := range machinePools {
 		machinepool := machinePools[i]
