@@ -263,7 +263,6 @@ func (s *Service) createCluster(ctx context.Context, log *logr.Logger) error {
 		WorkloadIdentityConfig: s.createWorkloadIdentityConfig(),
 		NetworkConfig:          s.createNetworkConfig(),
 		AddonsConfig:           s.createAddonsConfig(),
-		ResourceLabels:         s.scope.GCPManagedCluster.Labels,
 	}
 
 	if s.scope.GCPManagedControlPlane.Spec.ControlPlaneVersion != nil {
