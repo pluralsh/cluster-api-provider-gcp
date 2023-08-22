@@ -82,7 +82,7 @@ func defaultClientOptions(ctx context.Context, credentialsRef *infrav1.ObjectRef
 		if err != nil {
 			return nil, fmt.Errorf("getting gcp credentials from reference %s: %w", credentialsRef, err)
 		}
-		opts = append(opts, option.WithCredentialsJSON(rawData))
+		opts = append(opts, option.WithCredentialsJSON(rawData.JSON))
 	}
 
 	return opts, nil

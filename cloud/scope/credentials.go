@@ -18,11 +18,11 @@ package scope
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/pkg/errors"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	infrav1 "sigs.k8s.io/cluster-api-provider-gcp/api/v1beta1"
@@ -35,31 +35,53 @@ const (
 	ConfigFileEnvVar = "GOOGLE_APPLICATION_CREDENTIALS"
 )
 
+var (
+	gcpScopes = []string{
+		"https://www.googleapis.com/auth/cloud-platform",
+		"https://www.googleapis.com/auth/userinfo.email",
+	}
+)
+
 // Credential is a struct to hold GCP credential data.
 type Credential struct {
-	Type        string `json:"type"`
-	ProjectID   string `json:"project_id"`
-	ClientEmail string `json:"client_email"`
-	ClientID    string `json:"client_id"`
+	token oauth2.TokenSource
+}
+
+// GetToken returns the access token of the loaded GCP credentials.
+func (c *Credential) GetToken(ctx context.Context) (string, error) {
+	token, err := c.token.Token()
+	if err != nil {
+		return "", err
+	}
+	return token.AccessToken, nil
 }
 
 func getCredentials(ctx context.Context, credentialsRef *infrav1.ObjectReference, crClient client.Client) (*Credential, error) {
-	var credentialData []byte
+	var credential *google.Credentials
 	var err error
 
 	if credentialsRef != nil {
-		credentialData, err = getCredentialDataFromRef(ctx, credentialsRef, crClient)
+		credential, err = getCredentialDataFromRef(ctx, credentialsRef, crClient)
 	} else {
-		credentialData, err = getCredentialDataUsingADC()
+		credential, err = getCredentialDataUsingADC(ctx)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("getting credential data: %w", err)
 	}
 
-	return parseCredential(credentialData)
+	token := credential.TokenSource
+	if token == nil {
+		return nil, errors.New("failed retrieving token from credentials")
+	}
+
+	credentials := &Credential{
+		token: token,
+	}
+
+	return credentials, nil
 }
 
-func getCredentialDataFromRef(ctx context.Context, credentialsRef *infrav1.ObjectReference, crClient client.Client) ([]byte, error) {
+func getCredentialDataFromRef(ctx context.Context, credentialsRef *infrav1.ObjectReference, crClient client.Client) (*google.Credentials, error) {
 	secretRefName := types.NamespacedName{
 		Name:      credentialsRef.Name,
 		Namespace: credentialsRef.Namespace,
@@ -75,27 +97,25 @@ func getCredentialDataFromRef(ctx context.Context, credentialsRef *infrav1.Objec
 		return nil, errors.New("no credentials key in secret")
 	}
 
-	return rawData, nil
+	creds, err := google.CredentialsFromJSON(ctx, rawData, gcpScopes...)
+	if err != nil {
+		return nil, fmt.Errorf("getting credentials from json: %w", err)
+	}
+	if creds == nil {
+		return nil, errors.New("failed finding default credentials, cred is nil")
+	}
+
+	return creds, nil
 }
 
-func getCredentialDataUsingADC() ([]byte, error) {
-	credsPath := os.Getenv(ConfigFileEnvVar)
-	if credsPath == "" {
-		return nil, fmt.Errorf("no ADC environment variable found for credentials (expect %s)", ConfigFileEnvVar)
+func getCredentialDataUsingADC(ctx context.Context) (*google.Credentials, error) {
+	creds, err := google.FindDefaultCredentials(ctx, gcpScopes...)
+	if err != nil {
+		return nil, fmt.Errorf("getting credentials from json: %w", err)
+	}
+	if creds == nil {
+		return nil, errors.New("failed finding default credentials, cred is nil")
 	}
 
-	byteValue, err := os.ReadFile(credsPath) //nolint:gosec // We need to read a file here
-	if err != nil {
-		return nil, fmt.Errorf("reading credentials from file %s: %w", credsPath, err)
-	}
-	return byteValue, nil
-}
-
-func parseCredential(rawData []byte) (*Credential, error) {
-	var credential Credential
-	err := json.Unmarshal(rawData, &credential)
-	if err != nil {
-		return nil, err
-	}
-	return &credential, nil
+	return creds, nil
 }
