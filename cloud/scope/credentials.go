@@ -48,7 +48,7 @@ type Credential struct {
 }
 
 // GetToken returns the access token of the loaded GCP credentials.
-func (c *Credential) GetToken(ctx context.Context) (string, error) {
+func (c *Credential) GetToken(_ context.Context) (string, error) {
 	token, err := c.token.Token()
 	if err != nil {
 		return "", err
