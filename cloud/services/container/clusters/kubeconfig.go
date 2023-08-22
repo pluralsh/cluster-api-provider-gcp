@@ -22,7 +22,6 @@ import (
 	"fmt"
 
 	"cloud.google.com/go/container/apiv1/containerpb"
-	"cloud.google.com/go/iam/credentials/apiv1/credentialspb"
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -147,7 +146,7 @@ func (s *Service) createCAPIKubeconfigSecret(ctx context.Context, cluster *conta
 		return fmt.Errorf("creating base kubeconfig: %w", err)
 	}
 
-	token, err := s.generateToken(ctx)
+	token, err := s.scope.GetCredential().GetToken(ctx)
 	if err != nil {
 		log.Error(err, "failed generating token")
 		return err
@@ -184,7 +183,7 @@ func (s *Service) updateCAPIKubeconfigSecret(ctx context.Context, configSecret *
 		return errors.Wrap(err, "failed to convert kubeconfig Secret into a clientcmdapi.Config")
 	}
 
-	token, err := s.generateToken(ctx)
+	token, err := s.scope.GetCredential().GetToken(ctx)
 	if err != nil {
 		return err
 	}
@@ -238,18 +237,4 @@ func (s *Service) createBaseKubeConfig(contextName string, cluster *containerpb.
 	}
 
 	return cfg, nil
-}
-
-func (s *Service) generateToken(ctx context.Context) (string, error) {
-	req := &credentialspb.GenerateAccessTokenRequest{
-		Name: fmt.Sprintf("projects/-/serviceAccounts/%s", s.scope.GetCredential().ClientEmail),
-		Scope: []string{
-			GkeScope,
-		},
-	}
-	resp, err := s.scope.CredentialsClient().GenerateAccessToken(ctx, req)
-	if err != nil {
-		return "", errors.Errorf("error generating access token: %v", err)
-	}
-	return resp.AccessToken, nil
 }
