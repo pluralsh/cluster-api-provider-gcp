@@ -47,6 +47,7 @@ type Credential struct {
 	token oauth2.TokenSource
 }
 
+// GetToken returns the access token of the loaded GCP credentials.
 func (c *Credential) GetToken(ctx context.Context) (string, error) {
 	token, err := c.token.Token()
 	if err != nil {
@@ -56,19 +57,19 @@ func (c *Credential) GetToken(ctx context.Context) (string, error) {
 }
 
 func getCredentials(ctx context.Context, credentialsRef *infrav1.ObjectReference, crClient client.Client) (*Credential, error) {
-	var credentialData *google.Credentials
+	var credential *google.Credentials
 	var err error
 
 	if credentialsRef != nil {
-		credentialData, err = getCredentialDataFromRef(ctx, credentialsRef, crClient)
+		credential, err = getCredentialDataFromRef(ctx, credentialsRef, crClient)
 	} else {
-		credentialData, err = getCredentialDataUsingADC(ctx)
+		credential, err = getCredentialDataUsingADC(ctx)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("getting credential data: %w", err)
 	}
 
-	token := credentialData.TokenSource
+	token := credential.TokenSource
 	if token == nil {
 		return nil, errors.New("failed retrieving token from credentials")
 	}
