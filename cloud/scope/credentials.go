@@ -20,8 +20,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 
+	"cloud.google.com/go/compute/metadata"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -80,15 +82,38 @@ func getCredentialDataFromRef(ctx context.Context, credentialsRef *infrav1.Objec
 
 func getCredentialDataUsingADC() ([]byte, error) {
 	credsPath := os.Getenv(ConfigFileEnvVar)
-	if credsPath == "" {
-		return nil, fmt.Errorf("no ADC environment variable found for credentials (expect %s)", ConfigFileEnvVar)
-	}
+	if credsPath != "" {
 
-	byteValue, err := os.ReadFile(credsPath) //nolint:gosec // We need to read a file here
-	if err != nil {
-		return nil, fmt.Errorf("reading credentials from file %s: %w", credsPath, err)
+		byteValue, err := os.ReadFile(credsPath) //nolint:gosec // We need to read a file here
+		if err != nil {
+			return nil, fmt.Errorf("reading credentials from file %s: %w", credsPath, err)
+		}
+		return byteValue, nil
+	} else {
+		metaClient := metadata.NewClient(&http.Client{})
+
+		email, err := metaClient.Email("")
+		if err != nil {
+			return nil, fmt.Errorf("getting email from metadata: %w", err)
+		}
+		projectID, err := metaClient.ProjectID()
+		if err != nil {
+			return nil, fmt.Errorf("getting project id from metadata: %w", err)
+		}
+
+		creds := Credential{
+			Type:        "service_account",
+			ProjectID:   projectID,
+			ClientEmail: email,
+			ClientID:    "",
+		}
+
+		credsJson, err := json.Marshal(creds)
+		if err != nil {
+			return nil, fmt.Errorf("marshalling credentials: %w", err)
+		}
+		return credsJson, nil
 	}
-	return byteValue, nil
 }
 
 func parseCredential(rawData []byte) (*Credential, error) {
