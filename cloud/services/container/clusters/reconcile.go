@@ -413,7 +413,7 @@ func (s *Service) checkDiffAndPrepareUpdate(existingCluster *containerpb.Cluster
 	}
 
 	// Master version
-	if s.hasDesiredVersion(s.scope.GCPManagedControlPlane.Spec.ControlPlaneVersion, existingCluster.CurrentMasterVersion) {
+	if !s.hasDesiredVersion(s.scope.GCPManagedControlPlane.Spec.ControlPlaneVersion, existingCluster.CurrentMasterVersion) {
 		needUpdate = true
 		clusterUpdate.DesiredMasterVersion = *s.scope.GCPManagedControlPlane.Spec.ControlPlaneVersion
 	}
