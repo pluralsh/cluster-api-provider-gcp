@@ -429,6 +429,12 @@ func (s *Service) hasDesiredVersion(controlPlaneVersion *string, clusterVersion 
 		return true
 	}
 
+	// In case user defined "latest" or "-" as control plane version assume
+	// that cluster is already at the desired version
+	if *controlPlaneVersion == "latest" || *controlPlaneVersion == "-" {
+		return true
+	}
+
 	// Allow partial version matching i.e. '1.24' and '1.24.14' should be a desired version match
 	// for cluster version '1.24.14-gke.2700'
 	if strings.HasPrefix(clusterVersion, *controlPlaneVersion) {

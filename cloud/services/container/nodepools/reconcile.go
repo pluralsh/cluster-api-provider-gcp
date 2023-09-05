@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"sigs.k8s.io/cluster-api-provider-gcp/cloud"
 	"sigs.k8s.io/cluster-api-provider-gcp/util/resourceurl"
@@ -32,15 +33,16 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/googleapis/gax-go/v2/apierror"
 	"github.com/pkg/errors"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	"sigs.k8s.io/cluster-api/util/conditions"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/log"
+
 	"sigs.k8s.io/cluster-api-provider-gcp/cloud/providerid"
 	"sigs.k8s.io/cluster-api-provider-gcp/cloud/scope"
 	"sigs.k8s.io/cluster-api-provider-gcp/cloud/services/shared"
 	infrav1exp "sigs.k8s.io/cluster-api-provider-gcp/exp/api/v1beta1"
 	"sigs.k8s.io/cluster-api-provider-gcp/util/reconciler"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
-	"sigs.k8s.io/cluster-api/util/conditions"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // Reconcile reconcile GKE node pool.
@@ -335,7 +337,7 @@ func (s *Service) checkDiffAndPrepareUpdateVersionOrImage(existingNodePool *cont
 		Name: s.scope.NodePoolFullName(),
 	}
 	// Node version
-	if s.scope.NodePoolVersion() != nil && *s.scope.NodePoolVersion() != existingNodePool.Version {
+	if !s.hasDesiredVersion(s.scope.NodePoolVersion(), existingNodePool.Version) {
 		needUpdate = true
 		updateNodePoolRequest.NodeVersion = *s.scope.NodePoolVersion()
 	}
@@ -355,6 +357,26 @@ func (s *Service) checkDiffAndPrepareUpdateVersionOrImage(existingNodePool *cont
 		}
 	}
 	return needUpdate, &updateNodePoolRequest
+}
+
+func (s *Service) hasDesiredVersion(nodePoolVersion *string, existingNodePoolVersion string) bool {
+	if nodePoolVersion == nil {
+		return true
+	}
+
+	// In case user defined "latest" or "-" as node pool version assume
+	// that node pool is already at the desired version
+	if *nodePoolVersion == "latest" || *nodePoolVersion == "-" {
+		return true
+	}
+
+	// Allow partial version matching i.e. '1.24' and '1.24.14' should be a desired version match
+	// for node pool version '1.24.14-gke.2700'
+	if strings.HasPrefix(existingNodePoolVersion, *nodePoolVersion) {
+		return true
+	}
+
+	return *nodePoolVersion == existingNodePoolVersion
 }
 
 func (s *Service) checkDiffAndPrepareUpdateAutoscaling(existingNodePool *containerpb.NodePool) (bool, *containerpb.SetNodePoolAutoscalingRequest) {
