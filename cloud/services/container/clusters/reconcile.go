@@ -19,6 +19,7 @@ package clusters
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"sigs.k8s.io/cluster-api-provider-gcp/api/v1beta1"
 	"sigs.k8s.io/cluster-api-provider-gcp/cloud/scope"
@@ -410,14 +411,29 @@ func (s *Service) checkDiffAndPrepareUpdate(existingCluster *containerpb.Cluster
 			Channel: desiredReleaseChannel,
 		}
 	}
+
 	// Master version
-	if s.scope.GCPManagedControlPlane.Spec.ControlPlaneVersion != nil && *s.scope.GCPManagedControlPlane.Spec.ControlPlaneVersion != existingCluster.CurrentMasterVersion {
+	if s.hasDesiredVersion(s.scope.GCPManagedControlPlane.Spec.ControlPlaneVersion, existingCluster.CurrentMasterVersion) {
 		needUpdate = true
 		clusterUpdate.DesiredMasterVersion = *s.scope.GCPManagedControlPlane.Spec.ControlPlaneVersion
 	}
-	updateClusterRequest := containerpb.UpdateClusterRequest{
+
+	return needUpdate, &containerpb.UpdateClusterRequest{
 		Name:   s.scope.ClusterFullName(),
 		Update: &clusterUpdate,
 	}
-	return needUpdate, &updateClusterRequest
+}
+
+func (s *Service) hasDesiredVersion(controlPlaneVersion *string, clusterVersion string) bool {
+	if controlPlaneVersion == nil {
+		return true
+	}
+
+	// Allow partial version matching i.e. '1.24' and '1.24.14' should be a desired version match
+	// for cluster version '1.24.14-gke.2700'
+	if strings.HasPrefix(clusterVersion, *controlPlaneVersion) {
+		return true
+	}
+
+	return *controlPlaneVersion == clusterVersion
 }
